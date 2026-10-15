@@ -1,0 +1,13 @@
+{
+  "name": "once",
+  "description": "Run one Claude Code prompt on another model or effort.",
+  "owner": {
+    "name": "DzmitryShut"
+  },
+  "plugins": [
+    {
+      "name": "once",
+      "source": "./"
+    }
+  ]
+}
