@@ -44,7 +44,7 @@ The prefix is removed before the prompt reaches the model. Text that doesn't par
 
 ## How it works
 
-`once` never changes your session's model or effort. It hooks the model requests of the turn your prompt starts and swaps `model` and `effort` on each of them, including every request after a tool call. When the turn ends, the override is gone. There is nothing to restore.
+`once` never changes your session's model or effort. It hooks the model requests of the turn your prompt starts and swaps `model` and `effort` on each of them, including every request after a tool call. Once the turn ends, requests go out with the session settings again.
 
 - Only the main agent is affected. Subagents started during that turn keep their own models.
 - If you type a `$` prompt while Claude is still working, it applies from the next model request.
