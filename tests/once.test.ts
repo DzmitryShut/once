@@ -68,11 +68,12 @@ describe('once', () => {
 
   test('text that is not an override passes untouched', async ($, on) => {
     const { sent, entered } = engine(on)
-    for (const text of ['$HOME is wrong', '$opus', '$opus:sonnet hi', '$max:max hi', 'cost is $5 now']) {
+    const texts = ['$HOME is wrong', '$opus', '$opus:sonnet hi', '$max:max hi', 'cost is $5 now', '$constructor go', '$__proto__ go']
+    for (const text of texts) {
       await submit($, text)
     }
     await step($, 't1')
-    expect(entered).toEqual(['$HOME is wrong', '$opus', '$opus:sonnet hi', '$max:max hi', 'cost is $5 now'])
+    expect(entered).toEqual(texts)
     expect(sent).toEqual([{ ...SESSION, agentId: undefined }])
   })
 

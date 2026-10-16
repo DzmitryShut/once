@@ -26,7 +26,9 @@ function parse(text: string): { override: Override; text: string } | undefined {
   if (!spec || !rest) return undefined
   const override: Override = {}
   for (const token of spec.toLowerCase().split(':')) {
-    const model = MODELS[token] ?? (/^claude-[\w.-]+$/.test(token) ? token : undefined)
+    // hasOwn, or `$constructor` would find Object's own properties.
+    const alias = Object.hasOwn(MODELS, token) ? MODELS[token] : undefined
+    const model = alias ?? (/^claude-[\w.-]+$/.test(token) ? token : undefined)
     if (isEffort(token) && !override.effort) override.effort = token
     else if (model && !override.model) override.model = model
     else return undefined
