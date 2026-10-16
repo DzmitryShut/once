@@ -66,8 +66,8 @@ The prompt cache belongs to a model. Changing the model drops it, changing the e
 Full output, with tokens and time per request: [`bench/results.md`](bench/results.md).
 
 - **Another model writes the conversation into its own cache.** Its first request in the large session wrote 146k tokens. The second request of the same prompt read them back.
-- **`$haiku` saves money only under 100k tokens.** Above that, Haiku bills the whole prompt at its higher rate card, and a cache write costs twice the input price: $1.00 per million tokens, against $0.20 for Opus reading its own cache. Under 100k, Haiku's cache write costs the same $0.20, and the cheap output makes `$haiku` eight times cheaper.
-- **`$sonnet` from an Opus session never saves money.** Sonnet's cache write costs $4 per million tokens, twenty times what Opus pays to read. It is faster: 5.5 s against 8.0 s in the large session.
+- **`$haiku` is cheaper under 100k tokens.** There Haiku's cache write costs $0.20 per million tokens, the same as Opus reading its own cache, and the cheap output does the rest: eight times cheaper in the small session. Above 100k, Haiku bills the whole prompt at its higher rate card, so the write costs $1.00 per million. For a short answer like this one that doubled the cost. By list prices it pays off again only when the answer runs past about 7k output tokens at this size.
+- **`$sonnet` rarely saves money in an Opus session.** Sonnet's cache write costs $4 per million tokens, twenty times what Opus pays to read. By list prices the cheaper output makes up for it only when the answer is about 40% as long as the context. It is faster: 5.5 s against 8.0 s in the large session.
 - **Effort is free to change.** `$low` and `$max` requests kept reading the session's cache, with a few hundred tokens written, as on any prompt.
 - **Going back is cheap.** The session's own cache lives for an hour on a subscription, so the next prompt writes only the switched prompt's messages, about 5k tokens.
 
