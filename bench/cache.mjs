@@ -2,7 +2,7 @@
 // What does one `$` prompt cost? Runs a `claude -p` session with the mod
 // loaded and reads its transcript: tokens, prompt cache, cost and time.
 //
-//   node bench/cache.mjs [--model opus] [--effort xhigh] [--pad 100000] [--json out.json]
+//   node bench/cache.mjs [--model opus] [--effort xhigh] [--pad 100000] [--task text] [--json out.json]
 //
 // One session: a setup prompt, then for each scenario a prompt with that
 // prefix (it makes a tool call, so two requests) and a follow-up prompt on
@@ -25,7 +25,7 @@ const REPO = resolve(import.meta.dirname, '..')
 const PROJECTS = join(process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude'), 'projects')
 
 const SETUP = 'Read hooks/register.ts. In one sentence, what does it do?'
-const SWITCHED = 'Read tests/once.test.ts and name one test.'
+const SWITCHED = args.task ?? 'Read tests/once.test.ts and name one test.'
 const FOLLOW_UP = 'In one sentence: what would you change in register.ts?'
 
 // About 20 tokens a line. A fresh salt per run keeps the padding out of any
@@ -52,7 +52,7 @@ function claude(sessionId, prompt, first) {
       '--model', MODEL,
       '--effort', EFFORT,
       '--plugin-dir', REPO,
-      '--allowedTools', 'Read',
+      '--allowedTools', 'Read', 'Grep', 'Glob',
       '--output-format', 'json',
     ],
     { cwd: REPO, env, input: prompt, encoding: 'utf8', maxBuffer: 64 << 20 },
@@ -106,7 +106,7 @@ for (const [i, p] of prompts.entries()) {
   const result = claude(id, p.text, i === 0)
   const all = requests(transcript(id))
   // total_cost_usd covers the whole session so far, not just this prompt.
-  turns.push({ label: p.label, cost: result.total_cost_usd - spent, ms: result.duration_ms, requests: all.slice(seen) })
+  turns.push({ label: p.label, cost: result.total_cost_usd - spent, ms: result.duration_ms, answer: result.result, requests: all.slice(seen) })
   spent = result.total_cost_usd
   seen = all.length
 }

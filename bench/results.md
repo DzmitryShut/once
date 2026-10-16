@@ -39,3 +39,38 @@ Each `$` prompt reads a file, so it makes two model requests. The cache columns 
 | after $low | 2 | opus-5-5 | 199 + 414 | 173.2k + 173.4k | 259 | 0.079 | 6.1 |
 | $max | 2 | opus-5-5 | 147 + 2.4k | 173.9k + 174.0k | 1.1k | 0.111 | 16.6 |
 | after $max | 2 | opus-5-5 | 690 + 220 | 176.4k + 177.1k | 243 | 0.083 | 5.7 |
+
+## Repeated `$haiku` in a big session (145-155k tokens)
+
+`node bench/cache.mjs --pad 75000 --scenarios 'none,$haiku,$haiku,$haiku'`
+
+| prompt | requests | model | cache write | cache read | output | cost $ | time s |
+| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| setup | 2 | opus-5-5 | 116.1k + 10.8k | 16.1k + 132.2k | 243 | 1.050 | 10.3 |
+| none | 2 | opus-5-5 | 184 + 2.0k | 143.0k + 143.2k | 164 | 0.078 | 5.5 |
+| after none | 1 | opus-5-5 | 142 | 145.2k | 889 | 0.048 | 11.1 |
+| $haiku | 2 | haiku-5-5 | 129.4k + 2.7k | 16.1k + 145.4k | 858 | 0.142 | 6.8 |
+| after $haiku | 2 | opus-5-5 | 3.8k + 553 | 145.4k + 149.1k | 293 | 0.099 | 5.9 |
+| $haiku | 2 | haiku-5-5 | 793 + 2.1k | 148.1k + 148.9k | 277 | 0.018 | 3.0 |
+| after $haiku | 2 | opus-5-5 | 2.4k + 473 | 149.7k + 152.1k | 373 | 0.091 | 7.7 |
+| $haiku | 2 | haiku-5-5 | 601 + 2.1k | 151.1k + 151.7k | 250 | 0.018 | 3.1 |
+| after $haiku | 2 | opus-5-5 | 2.4k + 384 | 152.6k + 155.0k | 270 | 0.089 | 9.4 |
+
+## Effort on a fresh session
+
+Each row is its own session, so no answer is in the context yet. The session runs at `xhigh`; the `medium` and `low` rows put `$medium` or `$low` before the task. Numbers are for the task prompt only.
+
+Task A, code review: `Without editing anything, check whether every branch of parse() in hooks/register.ts is covered by a test in tests/once.test.ts. Read and search the files as you need, then list uncovered branches in at most five bullets.`
+
+Task B, reading files: `Use Glob to list the files in this repository (skip .git and .claude-plugin/types), read every source, test and doc file, then give a one-line summary of each.`
+
+| task | effort | requests | thinking | output | cache write | cache read | cost $ | time s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| A | xhigh | 2 | 2.5k | 3.0k | 2.3k | 55.7k | 0.089 | 35.9 |
+| A | medium | 2 | 1.0k | 1.8k | 2.4k | 55.8k | 0.065 | 23.1 |
+| A | low | 2 | 493 | 1.1k | 2.4k | 55.8k | 0.052 | 15.3 |
+| B | xhigh | 3 | 303 | 1.9k | 14.6k | 85.5k | 0.173 | 19.0 |
+| B | medium | 3 | 69 | 1.5k | 12.5k | 85.5k | 0.146 | 14.6 |
+| B | low | 4 | 146 | 1.6k | 12.6k | 125.0k | 0.158 | 17.7 |
+
+In task A, only the `xhigh` answer found that `$constructor go` and `$__proto__ go` picked up Object's built-in properties as model aliases. `medium` and `low` reported every branch covered and listed edge cases. The bug is fixed in `hooks/register.ts`.

@@ -71,7 +71,18 @@ Full output, with tokens and time per request: [`bench/results.md`](bench/result
 - **Effort is free to change.** `$low` and `$max` requests kept reading the session's cache, with a few hundred tokens written, as on any prompt.
 - **Going back is cheap.** The session's own cache lives for an hour on a subscription, so the next prompt writes only the switched prompt's messages, about 5k tokens.
 
-How big are real sessions? Across my 62 Claude Code sessions, the median main-agent request carried 124k tokens of context, the 90th percentile 224k, and 97.7% of input tokens came from the cache. The large column is the usual case for me.
+How big are real sessions? Across my 62 Claude Code sessions, the median main-agent request carried 124k tokens of context, the 90th percentile 224k, and 97.7% of input tokens came from the cache. The large column is the usual case for me. At API prices, 73% of what my main agent cost went to the cache (39% reads, 34% writes) and 27% to output, thinking included.
+
+## Using it to save
+
+What paid off in the measurements ([`bench/results.md`](bench/results.md)):
+
+- **Pick the effort per prompt.** Effort doesn't touch the cache, so the only cost of `$low` or `$max` is the thinking itself. On a code review question in a fresh session, `medium` cost 27% less than `xhigh` and `low` 42% less, and they answered in 23 s and 15 s against 36 s. Only `xhigh` found a real bug, though: `$constructor` broke this mod (fixed). On a prompt that mostly reads files, effort barely changed the cost. So: `$low` for routine prompts, `$xhigh` or `$max` where a miss is expensive.
+- **`$haiku` while the session is under 100k tokens.** Haiku's cache write costs what Opus pays to read, so it is cheaper from the first prompt: eight times in the small session.
+- **In a big session, `$haiku` several times within the hour.** In a 145-155k session the first `$haiku` cost $0.142 against $0.078 on Opus. The second and third cost $0.018 each: Haiku's cache still held the conversation. Each return to Opus adds $0.02-0.03 for writing the Haiku prompt into Opus's cache. Three `$haiku` prompts within an hour break even, more save.
+- **Or `$haiku` on a prompt with many tool calls.** Only its first request writes the conversation; the rest read Haiku's cache at a quarter of Opus's price above 100k tokens, a twentieth below. From the per-request numbers, a prompt with five or more model requests pays for its own switch in a 150k session. My median prompt makes five.
+- **Not for a one-off question in a big session.** A two-request prompt cost $0.160 on Haiku against $0.085 on Opus at 160-175k tokens.
+- **`$sonnet` for speed only.** Sonnet reads its cache at the same $0.20 per million tokens as Opus, so it never wins on reads, and its cache write costs twenty times Opus's read.
 
 ## Checked
 
