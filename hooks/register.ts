@@ -49,11 +49,12 @@ function costNote(last: Last, target: string): string | undefined {
   const to = familyOf(target)
   if (!to || !Object.hasOwn(RATES, to)) return undefined
   const write = (last.context / 1e6) * RATES[to]!(last.context).write
-  const note = `${cap(to)} will write ~${tokens(last.context)} tokens of context into its own cache, about ${dollars(write)}.`
+  // A toast cuts a long line short and does not break lines, so the note is one short line.
+  const note = `${cap(to)} writes ~${tokens(last.context)} tokens to its cache: ~${dollars(write)}`
   const from = familyOf(last.model)
   const read = from && Object.hasOwn(RATES, from) ? RATES[from]!(last.context).read : undefined
   if (read === undefined || from === to) return note
-  return `${note} ${cap(from!)} would read them for about ${dollars((last.context / 1e6) * read)}.`
+  return `${note}. ${cap(from!)} would read: ~${dollars((last.context / 1e6) * read)}`
 }
 
 const PREFIX = /^\$([\w.:-]+)\s+(\S[\s\S]*)$/

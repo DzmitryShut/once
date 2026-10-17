@@ -53,7 +53,7 @@ Models: `opus`, `sonnet`, `haiku`, `fable`, or any full `claude-*` id. Effort: `
 
 The prefix is removed before the prompt reaches the model. Text that doesn't parse as a spec is sent as typed, so `$HOME is wrong` and `costs $5` are left alone.
 
-When the last request carried more than 100k tokens and the prompt changes the model, a toast shows what the switch costs before the prompt goes through, for example: *Haiku will write ~150k tokens of context into its own cache, about $0.15. Opus would read them for about $0.03.* The prompt is never held back. The estimate uses list prices for a 1-hour cache and assumes the session's own cache is still warm. It stays quiet when the target model answered within the last hour, because its cache already holds the conversation.
+When the last request carried more than 100k tokens and the prompt changes the model, a toast shows what the switch costs before the prompt goes through, for example: *Haiku writes ~150k tokens to its cache: ~$0.15. Opus would read: ~$0.03.* The prompt is never held back. The estimate uses list prices for a 1-hour cache and assumes the session's own cache is still warm. It stays quiet when the target model answered within the last hour, because its cache already holds the conversation.
 
 ## How it works
 

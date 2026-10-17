@@ -136,7 +136,7 @@ describe('cost note', () => {
     const entered = await submit($, '$haiku go')
     expect(entered.text).toBe('go')
     expect(toasts).toEqual([
-      'Haiku will write ~150k tokens of context into its own cache, about $0.15. Opus would read them for about $0.03.',
+      'Haiku writes ~150k tokens to its cache: ~$0.15. Opus would read: ~$0.03',
     ])
   })
 
@@ -170,8 +170,8 @@ describe('cost note', () => {
     await submit($, '$opus go')
     await submit($, '$haiku go')
     expect(toasts).toEqual([
-      'Opus will write ~200k tokens of context into its own cache, about $1.60.',
-      'Haiku will write ~200k tokens of context into its own cache, about $0.20.',
+      'Opus writes ~200k tokens to its cache: ~$1.60',
+      'Haiku writes ~200k tokens to its cache: ~$0.20',
     ])
   })
 
