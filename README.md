@@ -24,7 +24,9 @@ $max   find the race in the order book      hard: think as long as it takes
 /plugin install once --marketplace DzmitryShut/once
 ```
 
-Answer `y` to add the marketplace, then pick a scope. From a shell: `claude plugin install once --marketplace DzmitryShut/once`. In the desktop app: **+** next to the prompt, **Plugins**, **Add marketplace**.
+Answer `y` to add the marketplace, then pick a scope. In a session that is already open, run `/reload-plugins`. From a shell: `claude plugin install once --marketplace DzmitryShut/once`. In the desktop app: **+** next to the prompt, **Plugins**, **Add marketplace**.
+
+Needs Claude Code 2.1.287 or later, the first version that runs mods.
 
 ## Use
 
@@ -52,9 +54,17 @@ once used to switch the model too. That turned out to be a trap: another model s
 
 For a quick question to another model, use [aside](https://github.com/DzmitryShut/aside): `$haiku what does git reset --soft do?` asks a subagent with a fresh context and puts the answer in your chat. Both mods use `$` and work side by side.
 
-## How it works
+## What it touches
 
-`once` never touches your session settings. It sets `effort` on the model requests of the one turn your prompt starts, tool calls included, and stops when the turn ends. Subagents keep their own effort. Interrupt a turn before it reaches the model and the override is dropped.
+- Hooks: `prompt.submit`, `turn.step` and `turn.complete`, as `claude plugin validate` lists them.
+- It reads every prompt you send and changes only one that starts with `$` and a level: the prefix is cut before the model sees the text.
+- It sets `effort` on the model requests of the one turn that prompt starts, tool calls included, and stops when the turn ends. Interrupt a turn before it reaches the model and the override is dropped.
+- Your session settings, model and subagents stay as they are.
+- No network calls and no model calls of its own. Nothing is written to disk.
+
+## Update and remove
+
+Third-party marketplaces do not update on their own: run `claude plugin update once@once`, or turn on auto-update for the marketplace in `/plugin` under **Marketplaces**. Remove it with `claude plugin uninstall once@once`.
 
 ## Develop
 
