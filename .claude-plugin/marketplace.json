@@ -1,6 +1,6 @@
 {
   "name": "once",
-  "description": "Pick the effort or the model for one Claude Code prompt.",
+  "description": "Pick the effort for one Claude Code prompt.",
   "owner": {
     "name": "DzmitryShut"
   },

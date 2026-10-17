@@ -2,6 +2,8 @@
 
 Raw output of [`cache.mjs`](cache.mjs), 2026-10-17, Claude Code 2.1.302 on Windows, Claude subscription (1-hour cache TTL). Costs are Claude Code's own estimates at API prices; on a subscription they come out of your usage limits instead.
 
+Measured with once 0.1, which could also switch the session's model (`$haiku`, `$sonnet`). Those rows show why it no longer does: another model rewrites the whole conversation into its own cache. For a question to another model, use [aside](https://github.com/DzmitryShut/aside), which asks a subagent with a fresh context.
+
 Each `$` prompt reads a file, so it makes two model requests. The cache columns show each request separately.
 
 ## Small session (30-40k tokens of context)

@@ -20,7 +20,7 @@ for (let i = 2; i < process.argv.length; i += 2) args[process.argv[i].replace(/^
 const MODEL = args.model ?? 'opus'
 const EFFORT = args.effort ?? 'xhigh'
 const PAD = Number(args.pad ?? 0)
-const SCENARIOS = (args.scenarios ?? 'none,$haiku,$sonnet,$low,$max').split(',')
+const SCENARIOS = (args.scenarios ?? 'none,$low,$max').split(',')
 const REPO = resolve(import.meta.dirname, '..')
 const PROJECTS = join(process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude'), 'projects')
 
