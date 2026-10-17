@@ -1,5 +1,5 @@
 import type { On, TurnStepInput } from 'claude-code'
-import { describe, expect, test } from 'claude-code/testing'
+import { describe, expect, mock, test } from 'claude-code/testing'
 import type { Engine } from 'claude-code/testing'
 
 const SESSION = { model: 'claude-sonnet-5-5', effort: 'medium' } as const
@@ -102,5 +102,92 @@ describe('once', () => {
     await submit($, 'again')
     await step($, 't2')
     expect(sent.map(s => s.model)).toEqual(['claude-sonnet-5-5'])
+  })
+})
+
+describe('cost note', () => {
+  // A bottom engine that reports `usage.context` tokens per request and
+  // collects the toasts the plugin raises.
+  function sessionOf(on: On, model: string, context: number) {
+    const toasts: string[] = []
+    const usage = { context }
+    on('ui.toast', (_$, e) => {
+      toasts.push(e.text)
+      return { value: undefined }
+    })
+    on('prompt.submit', (_$, e) => ({ text: e.text }))
+    on('turn.step', async function* (_$, e) {
+      const u = { model: e.model, input_tokens: 10, output_tokens: 5, cache_read_input_tokens: usage.context - 110, cache_creation_input_tokens: 100 }
+      return { turnId: e.turnId, index: e.index, answer: '', toolUses: [], stopReason: 'end_turn' as const, usage: u }
+    })
+    on('turn.complete', () => ({ text: '' }))
+    const warm = async ($: Engine) => {
+      const stream = $.turn.step({ turnId: 'warm', index: 0, messageCount: 1, model, effort: 'medium' })
+      for await (const _ of stream);
+      await stream.result
+      await complete($, 'warm')
+    }
+    return { toasts, warm, usage }
+  }
+
+  test('warns, without holding the prompt, when a big session switches model', async ($, on) => {
+    const { toasts, warm } = sessionOf(on, 'claude-opus-5-5', 150_000)
+    await warm($)
+    const entered = await submit($, '$haiku go')
+    expect(entered.text).toBe('go')
+    expect(toasts).toEqual([
+      'Haiku will write ~150k tokens of context into its own cache, about $0.15. Opus would read them for about $0.03.',
+    ])
+  })
+
+  test('no warning on effort alone, without a model change, or on a plain prompt', async ($, on) => {
+    const { toasts, warm } = sessionOf(on, 'claude-opus-5-5', 150_000)
+    await warm($)
+    await submit($, '$max go')
+    await submit($, '$opus go')
+    await submit($, 'plain prompt')
+    expect(toasts).toEqual([])
+  })
+
+  test('no warning at 100k tokens or under', async ($, on) => {
+    const { toasts, warm } = sessionOf(on, 'claude-opus-5-5', 100_000)
+    await warm($)
+    await submit($, '$haiku go')
+    expect(toasts).toEqual([])
+  })
+
+  test('no warning before the first request, or for a model it has no price for', async ($, on) => {
+    const { toasts, warm } = sessionOf(on, 'claude-opus-5-5', 150_000)
+    await submit($, '$haiku first')
+    await warm($)
+    await submit($, '$claude-mystery-1 go')
+    expect(toasts).toEqual([])
+  })
+
+  test('priced from the context of the last request, fable has no read price to compare', async ($, on) => {
+    const { toasts, warm } = sessionOf(on, 'claude-fable-5-1', 200_000)
+    await warm($)
+    await submit($, '$opus go')
+    await submit($, '$haiku go')
+    expect(toasts).toEqual([
+      'Opus will write ~200k tokens of context into its own cache, about $1.60.',
+      'Haiku will write ~200k tokens of context into its own cache, about $0.20.',
+    ])
+  })
+
+  test('a second switch to the same model inside the hour does not warn, after the hour it does', async ($, on) => {
+    const clock = mock.clock(on, { now: 0 })
+    const { toasts, warm } = sessionOf(on, 'claude-opus-5-5', 150_000)
+    await warm($)
+    await submit($, '$haiku one')
+    await step($, 't1')
+    await complete($, 't1')
+    expect(toasts).toHaveLength(1)
+    await clock.advance(30 * 60_000)
+    await submit($, '$haiku two')
+    expect(toasts).toHaveLength(1)
+    await clock.advance(31 * 60_000)
+    await submit($, '$haiku three')
+    expect(toasts).toHaveLength(2)
   })
 })
