@@ -1,6 +1,6 @@
 # once
 
-A Claude Code mod that runs a single prompt on another model, another effort level, or both. Your next prompt runs on your usual settings again.
+A Claude Code mod that sets the effort, the model, or both for a single prompt. `$low` for routine prompts, `$max` for hard ones. Your next prompt runs on your usual settings again.
 
 ![once in a Claude Code session](assets/demo.png)
 
@@ -22,14 +22,25 @@ In the desktop app, click **+** next to the prompt box, then **Plugins**, **Add 
 
 ## Usage
 
-Start a prompt with `$` and a spec:
+Start a prompt with `$` and an effort level:
 
 ```
-$opus:max find the race in the order book
-$opus     review this diff
-$max      why does this test flake?
-$haiku:low rename fetchAll to loadAll
+$low   rename fetchAll to loadAll
+$high  why does this test flake?
+$max   find the race in the order book
 ```
+
+Effort is the setting to switch first. It costs nothing extra: the prompt cache belongs to the model, so `$low` and `$max` keep reading your session's cache ([measured below](#what-a-switch-costs)). Use `$low` for routine prompts and `$max` or `$xhigh` where a miss is expensive. Levels: `low`, `medium`, `high`, `xhigh`, `max`.
+
+Add a model when the prompt calls for one:
+
+```
+$haiku:low rename fetchAll to loadAll
+$opus:max  find the race in the order book
+$sonnet    review this diff
+```
+
+Another model starts with an empty cache and writes the whole conversation into its own, so a model switch is not free. It pays off when the session is under 100k tokens, when you send `$haiku` again within the hour, or when the prompt makes five or more model requests. The numbers are in [What a switch costs](#what-a-switch-costs) and [Using it to save](#using-it-to-save).
 
 | Spec | Model | Effort |
 | --- | --- | --- |
@@ -41,6 +52,8 @@ $haiku:low rename fetchAll to loadAll
 Models: `opus`, `sonnet`, `haiku`, `fable`, or any full `claude-*` id. Effort: `low`, `medium`, `high`, `xhigh`, `max`. Case does not matter.
 
 The prefix is removed before the prompt reaches the model. Text that doesn't parse as a spec is sent as typed, so `$HOME is wrong` and `costs $5` are left alone.
+
+When the last request carried more than 100k tokens and the prompt changes the model, a toast shows what the switch costs before the prompt goes through, for example: *Haiku will write ~150k tokens of context into its own cache, about $0.15. Opus would read them for about $0.03.* The prompt is never held back. The estimate uses list prices for a 1-hour cache and assumes the session's own cache is still warm. It stays quiet when the target model answered within the last hour, because its cache already holds the conversation.
 
 ## How it works
 
@@ -104,7 +117,7 @@ claude --plugin-dir /path/to/once
 claude plugin validate .
 ```
 
-The whole mod is [`hooks/register.ts`](hooks/register.ts). Model aliases live in the `MODELS` table at the top.
+The whole mod is [`hooks/register.ts`](hooks/register.ts). Model aliases live in the `MODELS` table at the top, cache prices for the toast in `RATES`.
 
 To measure the cost of a switch on your own setup (it runs a real session, about $2.70 at API prices with `--pad`, $0.45 without):
 

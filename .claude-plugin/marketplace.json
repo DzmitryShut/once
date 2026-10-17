@@ -1,6 +1,6 @@
 {
   "name": "once",
-  "description": "Run one Claude Code prompt on another model or effort.",
+  "description": "Pick the effort or the model for one Claude Code prompt.",
   "owner": {
     "name": "DzmitryShut"
   },

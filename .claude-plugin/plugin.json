@@ -1,10 +1,10 @@
 {
   "name": "once",
   "version": "0.1.0",
-  "description": "Run one prompt on another model and/or effort: `$opus:max fix the test`. The next prompt is back on your usual settings.",
+  "description": "Set the effort, the model, or both for one Claude Code prompt: `$low` for routine, `$max` for hard, `$haiku` to save. The next prompt is back on your usual settings.",
   "author": { "name": "DzmitryShut" },
   "homepage": "https://github.com/DzmitryShut/once",
   "repository": "https://github.com/DzmitryShut/once",
   "license": "MIT",
-  "keywords": ["model", "effort", "prompt", "claude-code-mod"]
+  "keywords": ["effort", "model", "prompt", "claude-code-mod"]
 }
