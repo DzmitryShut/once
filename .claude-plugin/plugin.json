@@ -1,6 +1,6 @@
 {
   "name": "once",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Pick the effort for one Claude Code prompt: `$low` for routine, `$max` for hard. The prompt cache is kept, and the next prompt is back on your usual effort.",
   "author": { "name": "DzmitryShut" },
   "homepage": "https://github.com/DzmitryShut/once",
