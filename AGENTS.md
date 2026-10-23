@@ -14,4 +14,4 @@ once is a Claude Code mod: a `$low` … `$max` prefix sets the effort for one pr
 - Bump `version` in `.claude-plugin/plugin.json` for every release, or installed copies will not update.
 - Keep the plugin name `once`: a renamed plugin is a new plugin for every install.
 - README numbers come from `bench/results.md` only.
-- `assets/social.png` is rendered from `assets/src/social.html` (1280x640, under 1 MB).
+- `assets/social.png` is rendered from `assets/src/social.html` (1280x640, under 1 MB), `assets/icon.png` from `assets/src/icon.html` (512x512).
